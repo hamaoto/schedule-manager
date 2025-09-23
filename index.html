@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スケジュール管理ツール v2</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>特訓日時スケジュール管理ツール</h1>
+    </header>
+
+    <main class="dashboard">
+
+        <section id="student-management-panel" class="panel">
+            <h2>生徒の管理</h2>
+            <div id="student-list">
+                </div>
+
+            <form id="student-form">
+                <h3>生徒の追加・編集</h3>
+                <input type="hidden" name="id">
+                <input type="text" name="name" placeholder="生徒の名前" required>
+                <select name="dayOfWeek" required>
+                    <option value="0">日曜日</option>
+                    <option value="1">月曜日</option>
+                    <option value="2">火曜日</option>
+                    <option value="3">水曜日</option>
+                    <option value="4">木曜日</option>
+                    <option value="5">金曜日</option>
+                    <option value="6">土曜日</option>
+                </select>
+                <input type="time" name="startTime" required>
+                <div class="form-actions">
+                    <button type="submit">保存</button>
+                    <button type="reset" class="cancel-btn">キャンセル</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="schedule-panel" class="panel">
+            <div class="calendar-header">
+                <button id="prev-week-btn">◀︎ 前の週</button>
+                <h2 id="current-week-display"></h2>
+                <button id="next-week-btn">次の週 ▶︎</button>
+            </div>
+            <div id="calendar-grid">
+                </div>
+
+            <hr>
+
+            <form id="change-form">
+                <h3>特訓日時の変更</h3>
+                <select name="name" required>
+                    </select>
+                <input type="date" name="date" required>
+                <input type="time" name="time" required>
+                <button type="submit">変更を適用</button>
+            </form>
+
+            <div id="report-section">
+                <h3>上司報告用テキスト</h3>
+                <textarea id="report-output" readonly></textarea>
+                <div class="report-actions">
+                    <button id="copy-report-btn">コピー</button>
+                    <button id="reset-report-btn" class="cancel-btn">リセット</button>
+                </div>
+                </div>
+        </section>
+    </main>
+    
+    <script src="script.js"></script>
+</body>
+</html>
