@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function render() {
         renderStudentList();
         renderStudentForm();
-        renderCalendar();   
+        renderCalendar();
         renderChangeForm();
         renderReport();
     }
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = document.createElement('div');
             item.className = 'student-item';
             item.innerHTML = `
-                <span><strong>${student.name}</strong> (${getDayOfWeekJP(student.dayOfWeek)} ${student.startTime})</span>
+                <span><strong>${student.name}</strong> (${getDayOfWeekJP(student.dayOfWeek)} ${formatTimeRange(student.startTime)})</span>
                 <div class="actions">
                     <button class="edit-btn" data-id="${student.id}">編集</button>
                     <button class="delete-btn" data-id="${student.id}">削除</button>
@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCalendar() {
         calendarGridEl.innerHTML = '';
+        const todayString = formatDate(new Date());
         const startOfWeek = new Date(state.currentDisplayDate);
         startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
         const endOfWeek = new Date(startOfWeek);
@@ -71,19 +72,26 @@ document.addEventListener('DOMContentLoaded', () => {
             dayHeader.className = 'day-header';
             if (dayOfWeek === 0) dayHeader.classList.add('is-sunday');
             if (dayOfWeek === 6) dayHeader.classList.add('is-saturday');
-            dayHeader.textContent = `${date.getDate()}(${getDayOfWeekJP(dayOfWeek)})`;
+
+            const dateNumberSpan = document.createElement('span');
+            dateNumberSpan.className = 'date-number';
+            dateNumberSpan.textContent = date.getDate();
+            if (dateString === todayString) {
+                dateNumberSpan.classList.add('is-today');
+            }
+            dayHeader.appendChild(dateNumberSpan);
+            dayHeader.append(`(${getDayOfWeekJP(dayOfWeek)})`);
             dayCell.appendChild(dayHeader);
             
-            const appointments = state.changes[dateString] || state.students.filter(s => s.dayOfWeek == dayOfWeek);
+            const appointments = (state.changes[dateString] || state.students.filter(s => s.dayOfWeek == dayOfWeek))
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+            
             appointments.forEach(appt => {
                 const appointmentEl = document.createElement('div');
                 appointmentEl.className = 'appointment';
-                // ▼▼▼ ここから変更 ▼▼▼
-                // 右クリックで情報を取得できるよう、data属性を付与
                 appointmentEl.dataset.name = appt.name;
                 appointmentEl.dataset.date = dateString;
-                // ▲▲▲ ここまで変更 ▲▲▲
-                appointmentEl.textContent = `${appt.startTime} ${appt.name}`;
+                appointmentEl.textContent = `${formatTimeRange(appt.startTime)} ${appt.name}`;
                 dayCell.appendChild(appointmentEl);
             });
             calendarGridEl.appendChild(dayCell);
@@ -135,6 +143,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             state.students.push(studentData);
         }
+
+        state.students.sort((a, b) => {
+            if (a.dayOfWeek !== b.dayOfWeek) {
+                return a.dayOfWeek - b.dayOfWeek;
+            }
+            return a.startTime.localeCompare(b.startTime);
+        });
+
         state.editingStudentId = null;
         saveAndRender();
     });
@@ -151,6 +167,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (e.target.matches('#next-week-btn')) {
             state.currentDisplayDate.setDate(state.currentDisplayDate.getDate() + 7);
+            render();
+        }
+        if (e.target.matches('#back-to-today-btn')) {
+            state.currentDisplayDate = new Date();
             render();
         }
         if (e.target.matches('#copy-report-btn')) {
@@ -182,52 +202,59 @@ document.addEventListener('DOMContentLoaded', () => {
         saveAndRender();
     });
     
-    // ▼▼▼ ここから追記 ▼▼▼
-    // カレンダーの右クリックイベント
     calendarGridEl.addEventListener('contextmenu', e => {
-        e.preventDefault(); // デフォルトの右クリックメニューをキャンセル
+        e.preventDefault();
         
         const appointmentEl = e.target.closest('.appointment');
-        if (!appointmentEl) return; // 予定以外の場所なら何もしない
+        if (!appointmentEl) return;
 
         const studentName = appointmentEl.dataset.name;
         const dateString = appointmentEl.dataset.date;
 
         if (confirm(`${dateString} の ${studentName} の予定を消去しますか？`)) {
-            // その日に「変更」がすでにある場合
             if (state.changes[dateString]) {
                 state.changes[dateString] = state.changes[dateString].filter(
                     appt => appt.name !== studentName
                 );
             } else {
-            // 「変更」がなく、デフォルトの予定だった場合
                 const date = new Date(`${dateString}T00:00:00`);
                 const dayOfWeek = date.getDay();
-                // その曜日のデフォルト予定から、クリックされた生徒を除外したリストを作成
                 const remainingAppointments = state.students.filter(student => {
                     return student.dayOfWeek == dayOfWeek && student.name !== studentName;
                 });
-                // 「変更」として保存することで、デフォルトの予定を上書き
                 state.changes[dateString] = remainingAppointments;
             }
             saveAndRender();
         }
     });
-    // ▲▲▲ ここまで追記 ▲▲▲
 
+    // ▼▼▼ ここから変更 ▼▼▼
     function updateReport(name, date, time) {
-        if (!state.reportText.startsWith('「次回予定変更')) {
-            state.reportText = '「次回予定変更';
-        }
+        // 新しい予定変更の文字列を作成
         const changeDate = new Date(`${date}T00:00:00`);
         const dayJP = getDayOfWeekJP(changeDate.getDay());
-        const endHour = parseInt(time.split(':')[0]) + 1;
-        const endTime = `${String(endHour).padStart(2, '0')}:${time.split(':')[1]}`;
-        const newEntry = ` ${changeDate.getMonth() + 1}/${changeDate.getDate()}(${dayJP}) ${time}-${endTime} ${name}`;
-        state.reportText = state.reportText.replace('」', '') + newEntry + '」';
+        const newEntry = `${changeDate.getMonth() + 1}/${changeDate.getDate()}(${dayJP}) ${formatTimeRange(time)} ${name}`;
+        
+        // レポートテキストが空ならヘッダーを追加
+        if (state.reportText === '') {
+            state.reportText = '次回予定変更';
+        }
+
+        // 改行(\n)を加えて新しい予定を追記
+        state.reportText += `\n${newEntry}`;
     }
+    // ▲▲▲ ここまで変更 ▲▲▲
     
     // ======== 5. ヘルパー関数と初期化 ========
+    function formatTimeRange(startTime) {
+        if (!startTime) return '';
+        const [hourStr, minuteStr] = startTime.split(':');
+        const hour = parseInt(hourStr, 10);
+        const endHour = (hour + 1) % 24;
+        const endTime = `${String(endHour).padStart(2, '0')}:${minuteStr}`;
+        return `${startTime}-${endTime}`;
+    }
+
     function saveAndRender() {
         localStorage.setItem('scheduleAppState', JSON.stringify(state));
         render();
