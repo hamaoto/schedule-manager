@@ -13,12 +13,10 @@
     </header>
 
     <main class="dashboard">
-
         <section id="student-management-panel" class="panel">
             <h2>生徒の管理</h2>
             <div id="student-list"></div>
-
-            <form id="student-form">
+            <form id="student-form" autocomplete="off">
                 <h3>生徒の追加・編集</h3>
                 <input type="hidden" name="id">
                 <input type="text" name="name" placeholder="生徒の名前" required>
@@ -52,7 +50,7 @@
             </div>
             <div id="calendar-grid"></div>
             <hr>
-            <form id="change-form">
+            <form id="change-form" autocomplete="off">
                 <h3>特訓日時の変更</h3>
                 <select name="name" required></select>
                 <input type="date" name="date" required>
@@ -63,7 +61,16 @@
                 </div>
                 <button type="submit">変更を適用</button>
             </form>
-
+            
+            <div id="move-confirm-view" class="hidden">
+                <h3>どの特訓を移動しますか？</h3>
+                <div id="move-source-options">
+                    </div>
+                <div class="form-actions">
+                    <button id="confirm-move-btn">この内容で決定</button>
+                    <button id="cancel-move-btn" class="cancel-btn">キャンセル</button>
+                </div>
+            </div>
             <div id="report-section">
                 <h3>教務報告用テキスト</h3>
                 <textarea id="report-output" readonly></textarea>

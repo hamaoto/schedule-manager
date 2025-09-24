@@ -53,8 +53,13 @@ h2, h3 {
     border-bottom: 2px solid var(--border-color);
     padding-bottom: 0.5rem;
 }
+/* ▼▼▼ hrタグのスタイルを変更 ▼▼▼ */
+hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 1.5rem 0;
+}
 
-/* フォーム */
 form {
     display: flex;
     flex-direction: column;
@@ -69,6 +74,7 @@ input, select, button, textarea {
     width: 100%;
     box-sizing: border-box;
 }
+.hidden { display: none; } /* ▼▼▼ 追記 ▼▼▼ */
 button {
     cursor: pointer;
     background-color: var(--secondary-color);
@@ -84,7 +90,6 @@ button:hover { background-color: #0056b3; }
 .cancel-btn { background-color: #6c757d; }
 .cancel-btn:hover { background-color: #5a6268; }
 
-/* ▼▼▼ ここから追記 ▼▼▼ */
 .time-input-group {
     display: flex;
     align-items: center;
@@ -96,9 +101,7 @@ button:hover { background-color: #0056b3; }
 .time-input-group span {
     font-weight: bold;
 }
-/* ▲▲▲ ここまで追記 ▲▲▲ */
 
-/* 生徒リスト */
 #student-list .student-item {
     display: flex;
     justify-content: space-between;
@@ -115,7 +118,6 @@ button:hover { background-color: #0056b3; }
 .delete-btn { background-color: var(--danger-color); }
 .delete-btn:hover { background-color: #c82333; }
 
-/* カレンダー */
 .calendar-header {
     display: flex;
     align-items: center;
@@ -183,4 +185,29 @@ button:hover { background-color: #0056b3; }
 }
 .report-actions button {
     flex: 1;
+}
+
+/* ▼▼▼ ここから追記 ▼▼▼ */
+#move-confirm-view {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--light-gray);
+}
+#move-source-options label {
+    display: block;
+    padding: 0.75rem;
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+}
+#move-source-options label:hover {
+    background-color: #e9ecef;
+}
+#move-source-options input {
+    margin-right: 0.5rem;
+    width: auto;
 }
