@@ -34,8 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
         state.students.forEach(student => {
             const item = document.createElement('div');
             item.className = 'student-item';
+            // ▼▼▼ 表示形式を変更 ▼▼▼
             item.innerHTML = `
-                <span><strong>${student.name}</strong> (${getDayOfWeekJP(student.dayOfWeek)} ${student.startTime})</span>
+                <span><strong>${student.name}</strong> (${getDayOfWeekJP(student.dayOfWeek)} ${formatTimeRange(student.startTime)})</span>
                 <div class="actions">
                     <button class="edit-btn" data-id="${student.id}">編集</button>
                     <button class="delete-btn" data-id="${student.id}">削除</button>
@@ -78,12 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
             appointments.forEach(appt => {
                 const appointmentEl = document.createElement('div');
                 appointmentEl.className = 'appointment';
-                // ▼▼▼ ここから変更 ▼▼▼
-                // 右クリックで情報を取得できるよう、data属性を付与
                 appointmentEl.dataset.name = appt.name;
                 appointmentEl.dataset.date = dateString;
-                // ▲▲▲ ここまで変更 ▲▲▲
-                appointmentEl.textContent = `${appt.startTime} ${appt.name}`;
+                // ▼▼▼ 表示形式を変更 ▼▼▼
+                appointmentEl.textContent = `${formatTimeRange(appt.startTime)} ${appt.name}`;
                 dayCell.appendChild(appointmentEl);
             });
             calendarGridEl.appendChild(dayCell);
@@ -181,39 +180,32 @@ document.addEventListener('DOMContentLoaded', () => {
         updateReport(name, date, time);
         saveAndRender();
     });
-    
-    // ▼▼▼ ここから追記 ▼▼▼
-    // カレンダーの右クリックイベント
+
     calendarGridEl.addEventListener('contextmenu', e => {
-        e.preventDefault(); // デフォルトの右クリックメニューをキャンセル
+        e.preventDefault();
         
         const appointmentEl = e.target.closest('.appointment');
-        if (!appointmentEl) return; // 予定以外の場所なら何もしない
+        if (!appointmentEl) return;
 
         const studentName = appointmentEl.dataset.name;
         const dateString = appointmentEl.dataset.date;
 
         if (confirm(`${dateString} の ${studentName} の予定を消去しますか？`)) {
-            // その日に「変更」がすでにある場合
             if (state.changes[dateString]) {
                 state.changes[dateString] = state.changes[dateString].filter(
                     appt => appt.name !== studentName
                 );
             } else {
-            // 「変更」がなく、デフォルトの予定だった場合
                 const date = new Date(`${dateString}T00:00:00`);
                 const dayOfWeek = date.getDay();
-                // その曜日のデフォルト予定から、クリックされた生徒を除外したリストを作成
                 const remainingAppointments = state.students.filter(student => {
                     return student.dayOfWeek == dayOfWeek && student.name !== studentName;
                 });
-                // 「変更」として保存することで、デフォルトの予定を上書き
                 state.changes[dateString] = remainingAppointments;
             }
             saveAndRender();
         }
     });
-    // ▲▲▲ ここまで追記 ▲▲▲
 
     function updateReport(name, date, time) {
         if (!state.reportText.startsWith('「次回予定変更')) {
@@ -221,13 +213,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const changeDate = new Date(`${date}T00:00:00`);
         const dayJP = getDayOfWeekJP(changeDate.getDay());
-        const endHour = parseInt(time.split(':')[0]) + 1;
-        const endTime = `${String(endHour).padStart(2, '0')}:${time.split(':')[1]}`;
-        const newEntry = ` ${changeDate.getMonth() + 1}/${changeDate.getDate()}(${dayJP}) ${time}-${endTime} ${name}`;
+        const newEntry = ` ${changeDate.getMonth() + 1}/${changeDate.getDate()}(${dayJP}) ${formatTimeRange(time)} ${name}`; // ここも修正
         state.reportText = state.reportText.replace('」', '') + newEntry + '」';
     }
     
     // ======== 5. ヘルパー関数と初期化 ========
+    // ▼▼▼ 新しい関数をここに追加 ▼▼▼
+    /**
+     * "21:00" のような時間文字列を "21:00-22:00" の形式に変換する
+     * @param {string} startTime - 開始時間の文字列
+     * @returns {string} 1時間の範囲を持つ時間の文字列
+     */
+    function formatTimeRange(startTime) {
+        if (!startTime) return '';
+        const [hourStr, minuteStr] = startTime.split(':');
+        const hour = parseInt(hourStr, 10);
+        const endHour = (hour + 1) % 24; // 23時の次は0時になるように
+        const endTime = `${String(endHour).padStart(2, '0')}:${minuteStr}`;
+        return `${startTime}-${endTime}`;
+    }
+
     function saveAndRender() {
         localStorage.setItem('scheduleAppState', JSON.stringify(state));
         render();
