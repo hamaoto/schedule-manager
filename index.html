@@ -16,8 +16,7 @@
 
         <section id="student-management-panel" class="panel">
             <h2>生徒の管理</h2>
-            <div id="student-list">
-                </div>
+            <div id="student-list"></div>
 
             <form id="student-form">
                 <h3>生徒の追加・編集</h3>
@@ -32,7 +31,11 @@
                     <option value="5">金曜日</option>
                     <option value="6">土曜日</option>
                 </select>
-                <input type="time" name="startTime" required>
+                <div class="time-input-group">
+                    <input type="time" name="startTime" required>
+                    <span>〜</span>
+                    <input type="time" name="endTime" required>
+                </div>
                 <div class="form-actions">
                     <button type="submit">保存</button>
                     <button type="reset" class="cancel-btn">キャンセル</button>
@@ -47,17 +50,17 @@
                 <h2 id="current-week-display"></h2>
                 <button id="back-to-today-btn">今日</button>
             </div>
-            <div id="calendar-grid">
-                </div>
-
+            <div id="calendar-grid"></div>
             <hr>
-
             <form id="change-form">
                 <h3>特訓日時の変更</h3>
-                <select name="name" required>
-                    </select>
+                <select name="name" required></select>
                 <input type="date" name="date" required>
-                <input type="time" name="time" required>
+                <div class="time-input-group">
+                    <input type="time" name="startTime" required>
+                    <span>〜</span>
+                    <input type="time" name="endTime" required>
+                </div>
                 <button type="submit">変更を適用</button>
             </form>
 

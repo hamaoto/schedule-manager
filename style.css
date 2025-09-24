@@ -84,6 +84,20 @@ button:hover { background-color: #0056b3; }
 .cancel-btn { background-color: #6c757d; }
 .cancel-btn:hover { background-color: #5a6268; }
 
+/* ▼▼▼ ここから追記 ▼▼▼ */
+.time-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.time-input-group input {
+    flex: 1;
+}
+.time-input-group span {
+    font-weight: bold;
+}
+/* ▲▲▲ ここまで追記 ▲▲▲ */
+
 /* 生徒リスト */
 #student-list .student-item {
     display: flex;
@@ -105,10 +119,9 @@ button:hover { background-color: #0056b3; }
 .calendar-header {
     display: flex;
     align-items: center;
-    gap: 1rem; /* ▼▼▼ 変更 ▼▼▼ */
+    gap: 1rem;
     margin-bottom: 1rem;
 }
-/* ▼▼▼ 追記 ▼▼▼ */
 .calendar-header h2 {
     flex-grow: 1;
     text-align: center;
@@ -138,7 +151,6 @@ button:hover { background-color: #0056b3; }
 .is-saturday { color: var(--secondary-color); }
 .is-sunday { color: var(--danger-color); }
 
-/* ▼▼▼ 追記 ▼▼▼ */
 .day-header .date-number {
     display: inline-block;
     width: 1.8em;
