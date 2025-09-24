@@ -59,18 +59,22 @@
                     <span>〜</span>
                     <input type="time" name="endTime" required>
                 </div>
+                <div class="change-type-group">
+                    <label><input type="radio" name="changeType" value="temporary" checked> 一時的な変更</label>
+                    <label><input type="radio" name="changeType" value="permanent"> 継続的な変更（デフォルトも更新）</label>
+                </div>
                 <button type="submit">変更を適用</button>
             </form>
             
             <div id="move-confirm-view" class="hidden">
                 <h3>どの特訓を移動しますか？</h3>
-                <div id="move-source-options">
-                    </div>
+                <div id="move-source-options"></div>
                 <div class="form-actions">
                     <button id="confirm-move-btn">この内容で決定</button>
                     <button id="cancel-move-btn" class="cancel-btn">キャンセル</button>
                 </div>
             </div>
+
             <div id="report-section">
                 <h3>教務報告用テキスト</h3>
                 <textarea id="report-output" readonly></textarea>

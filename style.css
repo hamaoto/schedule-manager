@@ -53,7 +53,6 @@ h2, h3 {
     border-bottom: 2px solid var(--border-color);
     padding-bottom: 0.5rem;
 }
-/* ▼▼▼ hrタグのスタイルを変更 ▼▼▼ */
 hr {
     border: none;
     border-top: 1px solid var(--border-color);
@@ -74,7 +73,7 @@ input, select, button, textarea {
     width: 100%;
     box-sizing: border-box;
 }
-.hidden { display: none; } /* ▼▼▼ 追記 ▼▼▼ */
+.hidden { display: none; }
 button {
     cursor: pointer;
     background-color: var(--secondary-color);
@@ -101,6 +100,23 @@ button:hover { background-color: #0056b3; }
 .time-input-group span {
     font-weight: bold;
 }
+
+/* ▼▼▼ ここから追記 ▼▼▼ */
+.change-type-group {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+.change-type-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.change-type-group input[type="radio"] {
+    width: auto;
+}
+/* ▲▲▲ ここまで追記 ▲▲▲ */
 
 #student-list .student-item {
     display: flex;
@@ -187,7 +203,6 @@ button:hover { background-color: #0056b3; }
     flex: 1;
 }
 
-/* ▼▼▼ ここから追記 ▼▼▼ */
 #move-confirm-view {
     margin-top: 1rem;
     padding: 1rem;
