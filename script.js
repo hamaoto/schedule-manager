@@ -30,7 +30,30 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStudentList(){/*...*/}
     function renderStudentForm(){/*...*/}
     function renderCalendar(){/*...*/}
-    function renderChangeForm(){/*...*/}
+
+    // ▼▼▼ この関数を修正します ▼▼▼
+    function renderChangeForm() {
+        const select = changeForm.elements.name;
+        // 現在選択されている生徒の名前を一時的に記憶
+        const currentlySelectedStudent = select.value;
+
+        // プルダウンの中身を一度空にする
+        select.innerHTML = '';
+
+        // 生徒リストからプルダウンの選択肢を再生成
+        state.students.forEach(student => {
+            const option = document.createElement('option');
+            option.value = student.name;
+            option.textContent = student.name;
+            select.appendChild(option);
+        });
+
+        // 記憶しておいた生徒が存在すれば、再度選択状態にする
+        if (currentlySelectedStudent) {
+            select.value = currentlySelectedStudent;
+        }
+    }
+    
     function renderReport(){/*...*/}
 
     document.getElementById('student-management-panel').addEventListener('click', e => {/*...*/});
@@ -69,15 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!state.changes[pendingChange.newDate]) { state.changes[pendingChange.newDate] = []; }
         state.changes[pendingChange.newDate] = state.changes[pendingChange.newDate].filter(appt => appt.name !== pendingChange.name);
-        state.changes[pendingChange.newDate].push({
-            name: pendingChange.name,
-            startTime: pendingChange.newStartTime,
-            endTime: pendingChange.newEndTime
-        });
+        state.changes[pendingChange.newDate].push({ name: pendingChange.name, startTime: pendingChange.newStartTime, endTime: pendingChange.newEndTime });
         
         if (selectedSourceDate !== 'add-only') {
-            // ▼▼▼ 変更点 ▼▼▼
-            // 予定をキャンセルする新しい関数を呼び出す
             cancelAppointment(selectedSourceDate, pendingChange.name);
         }
 
@@ -104,46 +121,11 @@ document.addEventListener('DOMContentLoaded', () => {
         pendingChange = null;
     });
 
-    calendarGridEl.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        const appointmentEl = e.target.closest('.appointment');
-        if (!appointmentEl) return;
-        const studentName = appointmentEl.dataset.name;
-        const dateString = appointmentEl.dataset.date;
-
-        if (confirm(`${dateString} の ${studentName} の予定を消去しますか？`)) {
-            // ▼▼▼ 変更点 ▼▼▼
-            // こちらも、新しいキャンセル関数を呼び出すように変更
-            cancelAppointment(dateString, studentName);
-            saveAndRender();
-        }
-    });
+    calendarGridEl.addEventListener('contextmenu', e => {/*...*/});
     
-    // ======== 5. ヘルパー関数と初期化 ========
-
-    // ▼▼▼ 追記: 予定をキャンセルするための新しい専用関数 ▼▼▼
-    /**
-     * 指定された日付の、指定された生徒の予定をキャンセルする（state.changesを更新する）
-     * @param {string} dateString - YYYY-MM-DD形式の日付
-     * @param {string} studentName - キャンセルする生徒の名前
-     */
-    function cancelAppointment(dateString, studentName) {
-        const date = new Date(`${dateString}T00:00:00`);
-        const dayOfWeek = date.getDay();
-
-        // まず、その日に表示されるべき現在の予定リストを取得
-        const currentAppointments = state.changes[dateString]
-            ? [...state.changes[dateString]] // 既に変更があればそれをベースに
-            : state.students.filter(s => s.dayOfWeek == dayOfWeek); // なければデフォルトスケジュールから
-
-        // そのリストから、指定された生徒だけを除外
-        const updatedAppointments = currentAppointments.filter(appt => appt.name !== studentName);
-
-        // 除外後のリストを、その日の確定スケジュールとしてstate.changesに保存
-        state.changes[dateString] = updatedAppointments;
-    }
-
+    function cancelAppointment(dateString, studentName) {/*...*/}
     function showMoveSourceOptions(student) {/*...*/}
+    function getWeekLabel(targetDate, today) {/*...*/}
     function updateReport(name, date, startTime, endTime) {/*...*/}
     function saveAndRender() {/*...*/}
     function loadState() {/*...*/}
@@ -154,12 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStudentList(){studentListEl.innerHTML = ''; if (state.students.length === 0) { studentListEl.innerHTML = '<p>生徒が登録されていません。</p>'; return; } state.students.forEach(student => { const item = document.createElement('div'); item.className = 'student-item'; item.innerHTML = `<span><strong>${student.name}</strong> (${getDayOfWeekJP(student.dayOfWeek)} ${student.startTime}-${student.endTime})</span><div class="actions"><button class="edit-btn" data-id="${student.id}">編集</button><button class="delete-btn" data-id="${student.id}">削除</button></div>`; studentListEl.appendChild(item); }); }
     function renderStudentForm(){ const student = state.students.find(s => s.id === state.editingStudentId); studentForm.elements.id.value = student ? student.id : ''; studentForm.elements.name.value = student ? student.name : ''; studentForm.elements.dayOfWeek.value = student ? student.dayOfWeek : '1'; studentForm.elements.startTime.value = student ? student.startTime : '19:00'; studentForm.elements.endTime.value = student ? student.endTime : '20:00'; }
     function renderCalendar(){ calendarGridEl.innerHTML = ''; const todayString = formatDate(new Date()); const startOfWeek = new Date(state.currentDisplayDate); startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()); const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(endOfWeek.getDate() + 6); currentWeekDisplayEl.textContent = `${formatDate(startOfWeek)} 〜 ${formatDate(endOfWeek)}`; for (let i = 0; i < 7; i++) { const date = new Date(startOfWeek); date.setDate(date.getDate() + i); const dayOfWeek = date.getDay(); const dateString = formatDate(date); const dayCell = document.createElement('div'); dayCell.className = 'day-cell'; const dayHeader = document.createElement('div'); dayHeader.className = 'day-header'; if (dayOfWeek === 0) dayHeader.classList.add('is-sunday'); if (dayOfWeek === 6) dayHeader.classList.add('is-saturday'); const dateNumberSpan = document.createElement('span'); dateNumberSpan.className = 'date-number'; dateNumberSpan.textContent = date.getDate(); if (dateString === todayString) { dateNumberSpan.classList.add('is-today'); } dayHeader.appendChild(dateNumberSpan); dayHeader.append(`(${getDayOfWeekJP(dayOfWeek)})`); dayCell.appendChild(dayHeader); const appointments = (state.changes[dateString] || state.students.filter(s => s.dayOfWeek == dayOfWeek)).sort((a, b) => a.startTime.localeCompare(b.startTime)); appointments.forEach(appt => { const appointmentEl = document.createElement('div'); appointmentEl.className = 'appointment'; appointmentEl.dataset.name = appt.name; appointmentEl.dataset.date = dateString; appointmentEl.textContent = `${appt.startTime}-${appt.endTime} ${appt.name}`; dayCell.appendChild(appointmentEl); }); calendarGridEl.appendChild(dayCell); } }
-    function renderChangeForm(){ const select = changeForm.elements.name; select.innerHTML = ''; state.students.forEach(student => { const option = document.createElement('option'); option.value = student.name; option.textContent = student.name; select.appendChild(option); }); }
     function renderReport(){ reportOutputEl.value = state.reportText; }
     document.getElementById('student-management-panel').addEventListener('click', e => { if (e.target.matches('.edit-btn')) { state.editingStudentId = Number(e.target.dataset.id); render(); } if (e.target.matches('.delete-btn')) { const studentId = Number(e.target.dataset.id); if (confirm('この生徒を削除しますか？')) { state.students = state.students.filter(s => s.id !== studentId); saveAndRender(); } } });
     studentForm.addEventListener('submit', e => { e.preventDefault(); const formData = new FormData(studentForm); const studentData = { id: Number(formData.get('id')) || Date.now(), name: formData.get('name'), dayOfWeek: formData.get('dayOfWeek'), startTime: formData.get('startTime'), endTime: formData.get('endTime') }; const existingIndex = state.students.findIndex(s => s.id === studentData.id); if (existingIndex > -1) { state.students[existingIndex] = studentData; } else { state.students.push(studentData); } state.students.sort((a, b) => { if (a.dayOfWeek !== b.dayOfWeek) { return a.dayOfWeek - b.dayOfWeek; } return a.startTime.localeCompare(b.startTime); }); state.editingStudentId = null; saveAndRender(); });
     studentForm.addEventListener('reset', e => { state.editingStudentId = null; render(); });
     document.getElementById('schedule-panel').addEventListener('click', e => { if (e.target.matches('#prev-week-btn')) { state.currentDisplayDate.setDate(state.currentDisplayDate.getDate() - 7); render(); } if (e.target.matches('#next-week-btn')) { state.currentDisplayDate.setDate(state.currentDisplayDate.getDate() + 7); render(); } if (e.target.matches('#back-to-today-btn')) { state.currentDisplayDate = new Date(); render(); } if (e.target.matches('#copy-report-btn')) { if (!state.reportText) return; navigator.clipboard.writeText(state.reportText).then(() => { alert('報告文をコピーしました！'); }); } if (e.target.matches('#reset-report-btn')) { if (confirm('報告用テキストをリセットしますか？')) { state.reportText = ''; saveAndRender(); } } });
+    calendarGridEl.addEventListener('contextmenu', e => { e.preventDefault(); const appointmentEl = e.target.closest('.appointment'); if (!appointmentEl) return; const studentName = appointmentEl.dataset.name; const dateString = appointmentEl.dataset.date; if (confirm(`${dateString} の ${studentName} の予定を消去しますか？`)) { cancelAppointment(dateString, studentName); saveAndRender(); } });
+    function cancelAppointment(dateString, studentName) { const date = new Date(`${dateString}T00:00:00`); const dayOfWeek = date.getDay(); const currentAppointments = state.changes[dateString] ? [...state.changes[dateString]] : state.students.filter(s => s.dayOfWeek == dayOfWeek); const updatedAppointments = currentAppointments.filter(appt => appt.name !== studentName); state.changes[dateString] = updatedAppointments; }
     function showMoveSourceOptions(student) { moveSourceOptions.innerHTML = ''; const today = new Date(); today.setHours(0, 0, 0, 0); const options = []; for (let i = 1; i < 22; i++) { let searchDate = new Date(today); searchDate.setDate(today.getDate() + i); if (searchDate.getDay() == student.dayOfWeek) { const label = getWeekLabel(searchDate, today); if (label) { options.push({ dateString: formatDate(searchDate), dayJP: getDayOfWeekJP(searchDate.getDay()), label: label }); } } } if (options.length > 0) { options.forEach((opt, index) => { const optionHtml = `<label><input type="radio" name="source-date" value="${opt.dateString}" ${index === 0 ? 'checked' : ''}> ${opt.label} ${opt.dateString} (${opt.dayJP}) の予定</label>`; moveSourceOptions.innerHTML += optionHtml; }); } moveSourceOptions.innerHTML += `<label><input type="radio" name="source-date" value="add-only" ${options.length === 0 ? 'checked' : ''}> 元の予定は消さず、新しい予定を追加するだけ</label>`; }
     function getWeekLabel(targetDate, today) { const todayDay = today.getDay(); const startOfThisWeek = new Date(today); startOfThisWeek.setDate(today.getDate() - todayDay); const startOfNextWeek = new Date(startOfThisWeek); startOfNextWeek.setDate(startOfThisWeek.getDate() + 7); const startOfWeekAfterNext = new Date(startOfNextWeek); startOfWeekAfterNext.setDate(startOfNextWeek.getDate() + 7); const startOfWeekAfterAfterNext = new Date(startOfWeekAfterNext); startOfWeekAfterAfterNext.setDate(startOfWeekAfterNext.getDate() + 7); if (targetDate >= startOfNextWeek && targetDate < startOfWeekAfterNext) { return "（来週）"; } else if (targetDate >= startOfWeekAfterNext && targetDate < startOfWeekAfterAfterNext) { return "（再来週）"; } else { return null; } }
     function updateReport(name, date, startTime, endTime) { if (state.reportText === '') { state.reportText = '次回予定変更'; } const changeDate = new Date(`${date}T00:00:00`); const dayJP = getDayOfWeekJP(changeDate.getDay()); const newEntry = `\n${changeDate.getMonth() + 1}/${changeDate.getDate()}(${dayJP}) ${startTime}-${endTime} ${name}`; state.reportText += newEntry; }
