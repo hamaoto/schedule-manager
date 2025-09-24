@@ -104,10 +104,24 @@ button:hover { background-color: #0056b3; }
 /* カレンダー */
 .calendar-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 1rem; /* ▼▼▼ 変更 ▼▼▼ */
     margin-bottom: 1rem;
 }
+/* ▼▼▼ 追記 ▼▼▼ */
+.calendar-header h2 {
+    flex-grow: 1;
+    text-align: center;
+    margin: 0;
+}
+#back-to-today-btn {
+    background-color: #6c757d;
+    padding: 0.5rem 1rem;
+}
+#back-to-today-btn:hover {
+    background-color: #5a6268;
+}
+
 #calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -124,6 +138,21 @@ button:hover { background-color: #0056b3; }
 .is-saturday { color: var(--secondary-color); }
 .is-sunday { color: var(--danger-color); }
 
+/* ▼▼▼ 追記 ▼▼▼ */
+.day-header .date-number {
+    display: inline-block;
+    width: 1.8em;
+    height: 1.8em;
+    line-height: 1.8em;
+    border-radius: 50%;
+    text-align: center;
+}
+.day-header .is-today {
+    background-color: var(--primary-color);
+    color: var(--white);
+    font-weight: bold;
+}
+
 .appointment {
     background-color: #e2f3ff;
     border-radius: 4px;
@@ -131,7 +160,7 @@ button:hover { background-color: #0056b3; }
     margin-top: 0.3rem;
     font-size: 0.85rem;
     word-break: break-all;
-    cursor: pointer; /* ▼▼▼ この行を追記 ▼▼▼ */
+    cursor: pointer;
 }
 #report-section { margin-top: 1.5rem; }
 

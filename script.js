@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
         state.students.forEach(student => {
             const item = document.createElement('div');
             item.className = 'student-item';
-            // ▼▼▼ 表示形式を変更 ▼▼▼
             item.innerHTML = `
                 <span><strong>${student.name}</strong> (${getDayOfWeekJP(student.dayOfWeek)} ${formatTimeRange(student.startTime)})</span>
                 <div class="actions">
@@ -55,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCalendar() {
         calendarGridEl.innerHTML = '';
+        const todayString = formatDate(new Date()); // ▼▼▼ 追記 ▼▼▼
         const startOfWeek = new Date(state.currentDisplayDate);
         startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
         const endOfWeek = new Date(startOfWeek);
@@ -72,7 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
             dayHeader.className = 'day-header';
             if (dayOfWeek === 0) dayHeader.classList.add('is-sunday');
             if (dayOfWeek === 6) dayHeader.classList.add('is-saturday');
-            dayHeader.textContent = `${date.getDate()}(${getDayOfWeekJP(dayOfWeek)})`;
+
+            // ▼▼▼ ここから変更 ▼▼▼
+            const dateNumberSpan = document.createElement('span');
+            dateNumberSpan.className = 'date-number';
+            dateNumberSpan.textContent = date.getDate();
+            if (dateString === todayString) {
+                dateNumberSpan.classList.add('is-today');
+            }
+            dayHeader.appendChild(dateNumberSpan);
+            dayHeader.append(`(${getDayOfWeekJP(dayOfWeek)})`);
+            // ▲▲▲ ここまで変更 ▲▲▲
+
             dayCell.appendChild(dayHeader);
             
             const appointments = state.changes[dateString] || state.students.filter(s => s.dayOfWeek == dayOfWeek);
@@ -81,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 appointmentEl.className = 'appointment';
                 appointmentEl.dataset.name = appt.name;
                 appointmentEl.dataset.date = dateString;
-                // ▼▼▼ 表示形式を変更 ▼▼▼
                 appointmentEl.textContent = `${formatTimeRange(appt.startTime)} ${appt.name}`;
                 dayCell.appendChild(appointmentEl);
             });
@@ -152,6 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
             state.currentDisplayDate.setDate(state.currentDisplayDate.getDate() + 7);
             render();
         }
+        // ▼▼▼ 追記 ▼▼▼
+        if (e.target.matches('#back-to-today-btn')) {
+            state.currentDisplayDate = new Date();
+            render();
+        }
         if (e.target.matches('#copy-report-btn')) {
             if (!state.reportText) return;
             navigator.clipboard.writeText(state.reportText).then(() => {
@@ -180,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateReport(name, date, time);
         saveAndRender();
     });
-
+    
     calendarGridEl.addEventListener('contextmenu', e => {
         e.preventDefault();
         
@@ -213,22 +228,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const changeDate = new Date(`${date}T00:00:00`);
         const dayJP = getDayOfWeekJP(changeDate.getDay());
-        const newEntry = ` ${changeDate.getMonth() + 1}/${changeDate.getDate()}(${dayJP}) ${formatTimeRange(time)} ${name}`; // ここも修正
+        const newEntry = ` ${changeDate.getMonth() + 1}/${changeDate.getDate()}(${dayJP}) ${formatTimeRange(time)} ${name}`;
         state.reportText = state.reportText.replace('」', '') + newEntry + '」';
     }
     
     // ======== 5. ヘルパー関数と初期化 ========
-    // ▼▼▼ 新しい関数をここに追加 ▼▼▼
-    /**
-     * "21:00" のような時間文字列を "21:00-22:00" の形式に変換する
-     * @param {string} startTime - 開始時間の文字列
-     * @returns {string} 1時間の範囲を持つ時間の文字列
-     */
     function formatTimeRange(startTime) {
         if (!startTime) return '';
         const [hourStr, minuteStr] = startTime.split(':');
         const hour = parseInt(hourStr, 10);
-        const endHour = (hour + 1) % 24; // 23時の次は0時になるように
+        const endHour = (hour + 1) % 24;
         const endTime = `${String(endHour).padStart(2, '0')}:${minuteStr}`;
         return `${startTime}-${endTime}`;
     }
